@@ -24,16 +24,27 @@ def load_vgg(sess, vgg_path):
     :param vgg_path: Path to vgg folder, containing "variables/" and "saved_model.pb"
     :return: Tuple of Tensors from VGG model (image_input, keep_prob, layer3_out, layer4_out, layer7_out)
     """
-    # TODO: Implement function
-    #   Use tf.saved_model.loader.load to load the model and weights
+
     vgg_tag = 'vgg16'
     vgg_input_tensor_name = 'image_input:0'
     vgg_keep_prob_tensor_name = 'keep_prob:0'
     vgg_layer3_out_tensor_name = 'layer3_out:0'
     vgg_layer4_out_tensor_name = 'layer4_out:0'
     vgg_layer7_out_tensor_name = 'layer7_out:0'
-    
-    return None, None, None, None, None
+
+    # Loading VGG model and weights for the encoder
+    tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
+
+    # Take out layers and keep_prob for skip layers
+    graph = sess.graph
+
+    image_input = graph.get_tensor_by_name(vgg_input_tensor_name)
+    keep_prob = graph.get_tensor_by_name(vgg_keep_prob_tensor_name)
+    layer3_out = graph.get_tensor_by_name(vgg_layer3_out_tensor_name)
+    layer4_out = graph.get_tensor_by_name(vgg_layer4_out_tensor_name)
+    layer7_out = graph.get_tensor_by_name(vgg_layer7_out_tensor_name)
+
+    return image_input, keep_prob, layer3_out, layer4_out, layer7_out
 tests.test_load_vgg(load_vgg, tf)
 
 
@@ -43,10 +54,12 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :param vgg_layer7_out: TF Tensor for VGG Layer 3 output
     :param vgg_layer4_out: TF Tensor for VGG Layer 4 output
     :param vgg_layer3_out: TF Tensor for VGG Layer 7 output
-    :param num_classes: Number of classes to classify
+    :param num_classes: Number of classes to classify (START WITH 2, ROAD AND NOT ROAD)
     :return: The Tensor for the last layer of output
     """
-    # TODO: Implement function
+    # TODO: Implement function, THESE ARE THE LAYERS AFTER THE VGG RUNS, SKIP LAYERS, AND OUTPUT
+    # Build Skip layers using conv2d_transpose for the decoder
+
     return None
 tests.test_layers(layers)
 
@@ -60,7 +73,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-    # TODO: Implement function
+    # TODO: Implement function, NEED TO FIGURE OUT WHICH ONE TO USE
     return None, None, None
 tests.test_optimize(optimize)
 
@@ -88,11 +101,22 @@ tests.test_train_nn(train_nn)
 def run():
     num_classes = 2
     image_shape = (160, 576)
+    learning_rate = 0.5
+    epochs = 100
+    batch_size = 100 # have to play with this one
+
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
 
-    # Download pretrained vgg model
+    training_dir = data_dir + '/data_road/training'
+    training_input = training_dir + '/image_2/' #need the extra slash?
+    training_correct = training_dir + '/gt_image_2/'
+
+    testing_dir = data_dir + '/data_road/testing'
+    testing_input = training_dir + '/image_2/'
+
+    # Download pre-trained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
 
     # OPTIONAL: Train and Inference on the cityscapes dataset instead of the Kitti dataset.
@@ -108,10 +132,23 @@ def run():
         # OPTIONAL: Augment Images for better results
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
-        # TODO: Build NN using load_vgg, layers, and optimize function
+        # Build Encoder portion of NN using load_vgg
+        image_input, keep_prob, layer3_out, layer4_out, layer7_out = load_vgg(sess, vgg_path)
+
+        # Create decoder and FCN using layers function
+        last_layer = layers(layer3_out, layer4_out, layer7_out, num_classes)
+
+        # Load correctly labeled training images into a tensor?
+
+        # Create an optimization function that will be used to train the neural network
+        logits, train_op, cross_entropy_loss = optimize(last_layer, correct_label, learning_rate, num_classes)
+
+        # Load training images into a tensor?
+
+        # Load testing images into a tensor?
 
         # TODO: Train NN using the train_nn function
-
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op)
         # TODO: Save inference data using helper.save_inference_samples
         #  helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
 
