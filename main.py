@@ -112,11 +112,8 @@ def run():
     tests.test_for_kitti_dataset(data_dir)
 
     training_dir = data_dir + '/data_road/training'
-    training_input = training_dir + '/image_2/' #need the extra slash?
-    training_correct = training_dir + '/gt_image_2/'
-
-    testing_dir = data_dir + '/data_road/testing'
-    testing_input = training_dir + '/image_2/'
+    training_input = training_dir + '/image_2' #need the extra slash?
+    training_correct = training_dir + '/gt_image_2'
 
     # Download pre-trained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
@@ -141,23 +138,22 @@ def run():
         last_layer = layers(layer3_out, layer4_out, layer7_out, num_classes)
 
         # Load training images and correctly labeled training images into tensors?
-        input_images, correct_labels = helper.load_images_and_labels_to_tensors(training_input, training_correct)
+        input_images, correct_labels = helper.load_images_and_labels_to_tensors(training_input,
+                                                                                training_correct)
 
         # Create an optimization function that will be used to train the neural network
-        logits, train_op, cross_entropy_loss = optimize(last_layer, correct_labels, learning_rate, num_classes)
+        logits, train_op, cross_entropy_loss = optimize(last_layer, correct_labels, learning_rate,
+                                                        num_classes)
 
         # Train NN using the train_nn function
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_images,
                  correct_labels, keep_prob, learning_rate)
 
         # Save inference data from trained model and run NN on the test directory
-        #TODO: double check that i want to use the testing_dir here
-        helper.save_inference_samples(runs_dir, testing_dir, sess, image_shape, logits, keep_prob, input_images)
+        helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits,
+                                      keep_prob, input_images)
 
         # OPTIONAL: Apply the trained model to a video
-
-        # Load testing images into a tensor?
-        # TODO: Run the model on the testing data, maybe put this in a separate file? or pass in a flag?
 
 
 if __name__ == '__main__':
