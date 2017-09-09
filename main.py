@@ -73,13 +73,13 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-    # TODO: Implement function, NEED TO FIGURE OUT WHICH ONE TO USE
+    # TODO: Implement function
     return None, None, None
 tests.test_optimize(optimize)
 
 
-def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
-             correct_label, keep_prob, learning_rate):
+def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_images,
+             correct_labels, keep_prob, learning_rate):
     """
     Train neural network and print out the loss during training.
     :param sess: TF Session
@@ -88,8 +88,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param get_batches_fn: Function to get batches of training data.  Call using get_batches_fn(batch_size)
     :param train_op: TF Operation to train the neural network
     :param cross_entropy_loss: TF Tensor for the amount of loss
-    :param input_image: TF Placeholder for input images
-    :param correct_label: TF Placeholder for label images
+    :param input_images: TF Placeholder for input images
+    :param correct_labels: TF Placeholder for label images
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
@@ -104,6 +104,8 @@ def run():
     learning_rate = 0.5
     epochs = 100
     batch_size = 100 # have to play with this one
+
+    labels = ['road', 'not_road']
 
     data_dir = './data'
     runs_dir = './runs'
@@ -138,21 +140,24 @@ def run():
         # Create decoder and FCN using layers function
         last_layer = layers(layer3_out, layer4_out, layer7_out, num_classes)
 
-        # Load correctly labeled training images into a tensor?
+        # Load training images and correctly labeled training images into tensors?
+        input_images, correct_labels = helper.load_images_and_labels_to_tensors(training_input, training_correct)
 
         # Create an optimization function that will be used to train the neural network
-        logits, train_op, cross_entropy_loss = optimize(last_layer, correct_label, learning_rate, num_classes)
+        logits, train_op, cross_entropy_loss = optimize(last_layer, correct_labels, learning_rate, num_classes)
 
-        # Load training images into a tensor?
+        # Train NN using the train_nn function
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_images,
+                 correct_labels, keep_prob, learning_rate)
 
-        # Load testing images into a tensor?
-
-        # TODO: Train NN using the train_nn function
-        train_nn(sess, epochs, batch_size, get_batches_fn, train_op)
-        # TODO: Save inference data using helper.save_inference_samples
-        #  helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_prob, input_image)
+        # Save inference data from trained model and run NN on the test directory
+        #TODO: double check that i want to use the testing_dir here
+        helper.save_inference_samples(runs_dir, testing_dir, sess, image_shape, logits, keep_prob, input_images)
 
         # OPTIONAL: Apply the trained model to a video
+
+        # Load testing images into a tensor?
+        # TODO: Run the model on the testing data, maybe put this in a separate file? or pass in a flag?
 
 
 if __name__ == '__main__':
