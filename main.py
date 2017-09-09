@@ -54,13 +54,23 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :param vgg_layer7_out: TF Tensor for VGG Layer 3 output
     :param vgg_layer4_out: TF Tensor for VGG Layer 4 output
     :param vgg_layer3_out: TF Tensor for VGG Layer 7 output
-    :param num_classes: Number of classes to classify (START WITH 2, ROAD AND NOT ROAD)
+    :param num_classes: Number of classes to classify
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function, THESE ARE THE LAYERS AFTER THE VGG RUNS, SKIP LAYERS, AND OUTPUT
     # Build Skip layers using conv2d_transpose for the decoder
+    # conv2d_transpose
 
-    return None
+    #TODO: where is input coming from? am i loading all of this into the tf.sess?
+    input = tf.layers.conv2d_transpose(input, num_classes, 4, strides=(2, 2))
+    input = tf.add(input, vgg_layer7_out)
+    input = tf.layers.conv2d_transpose(input, num_classes, 4, strides=(2, 2))
+    input = tf.add(input, vgg_layer4_out)
+    input = tf.layers.conv2d_transpose(input, num_classes, 4, strides=(2, 2))
+    input = tf.add(input, vgg_layer3_out)
+    input = tf.layers.conv2d_transpose(input, num_classes, 16, strides=(8, 8))
+
+    return input
 tests.test_layers(layers)
 
 
