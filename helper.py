@@ -138,12 +138,3 @@ def save_inference_samples(runs_dir, data_dir, sess, image_shape, logits, keep_p
         sess, logits, keep_prob, input_image, os.path.join(data_dir, 'data_road/testing'), image_shape)
     for name, image in image_outputs:
         scipy.misc.imsave(os.path.join(output_dir, name), image)
-
-#TODO create a method that loads the images and the colored images as tensors
-def load_images_and_labels_to_tensors(image_dir, label_dir, image_shape):
-    #return two tensors with image info and label info
-    return load_images_to_tensor(image_dir, image_shape), load_images_to_tensor(label_dir, image_shape)
-
-def load_images_to_tensor(dir, image_shape):
-
-    return None

@@ -33,10 +33,13 @@ def load_vgg(sess, vgg_path):
     vgg_layer7_out_tensor_name = 'layer7_out:0'
 
     # Loading VGG model and weights for the encoder
+    # TODO: MAKE SURE THIS IS VGG_PATH AND NOT SUPPOSED TO BE VGG_TAG
     tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
 
     # Take out layers and keep_prob for skip layers
-    graph = sess.graph
+    graph = tf.get_default_graph()
+    # TODO: not sure why we're not grabbing from session?
+    # graph = sess.graph
 
     image_input = graph.get_tensor_by_name(vgg_input_tensor_name)
     keep_prob = graph.get_tensor_by_name(vgg_keep_prob_tensor_name)
@@ -51,26 +54,52 @@ tests.test_load_vgg(load_vgg, tf)
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     Create the layers for a fully convolutional network.  Build skip-layers using the vgg layers.
-    :param vgg_layer7_out: TF Tensor for VGG Layer 3 output
+    :param vgg_layer3_out: TF Tensor for VGG Layer 3 output
     :param vgg_layer4_out: TF Tensor for VGG Layer 4 output
-    :param vgg_layer3_out: TF Tensor for VGG Layer 7 output
+    :param vgg_layer7_out: TF Tensor for VGG Layer 7 output
     :param num_classes: Number of classes to classify
     :return: The Tensor for the last layer of output
     """
     # TODO: Implement function, THESE ARE THE LAYERS AFTER THE VGG RUNS, SKIP LAYERS, AND OUTPUT
     # Build Skip layers using conv2d_transpose for the decoder
-    # conv2d_transpose
 
-    #TODO: where is input coming from? am i loading all of this into the tf.sess?
-    input = tf.layers.conv2d_transpose(input, num_classes, 4, strides=(2, 2))
-    input = tf.add(input, vgg_layer7_out)
-    input = tf.layers.conv2d_transpose(input, num_classes, 4, strides=(2, 2))
-    input = tf.add(input, vgg_layer4_out)
-    input = tf.layers.conv2d_transpose(input, num_classes, 4, strides=(2, 2))
-    input = tf.add(input, vgg_layer3_out)
-    input = tf.layers.conv2d_transpose(input, num_classes, 16, strides=(8, 8))
+    # TODO: do i need the strides set to 1x1?
+    # 1x1 to make it a fully convolutional network
+    conv_1x1 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1,
+                                padding='same',
+                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                strides=(1,1))
 
-    return input
+    # Upsample
+    input1 = tf.layers.conv2d_transpose(conv_1x1, num_classes, 4,
+                                       padding='same',
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                       strides=(2,2))
+    # Upsample
+    input2 = tf.layers.conv2d_transpose(input1, num_classes, 4,
+                                       padding='same',
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                       strides=(2,2))
+    # Skip Layer
+    input3 = tf.add(input2, vgg_layer4_out,
+                   padding='same',
+                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    # Upsample
+    input4 = tf.layers.conv2d_transpose(input3, num_classes, 4,
+                                       padding='same',
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                       strides=(2,2))
+    # Skip Layer
+    input5 = tf.add(input4, vgg_layer3_out,
+                   padding='same',
+                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    # Upsample
+    input6 = tf.layers.conv2d_transpose(input5, num_classes, 16,
+                                       padding='same',
+                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                       strides=(8,8))
+
+    return input6
 tests.test_layers(layers)
 
 
@@ -84,7 +113,14 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
     # TODO: Implement function
-    return None, None, None
+    # Get the logits from the network
+    logits = tf.reshape(nn_last_layer, (-1, num_classes))
+
+    # TODO: MAKE SURE LABEL SIZE MATCHES WITH LOGITS
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits, correct_label))
+    train_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
+
+    return logits, train_op, cross_entropy_loss
 tests.test_optimize(optimize)
 
 
@@ -103,7 +139,20 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-    # TODO: Implement function
+    # TODO: what's goin on with all these extra inputs? do i need an evaluate portion?
+    # and how is keep_prob and learning_rate being used here????
+    print("training..\n")
+
+    for epoch in range(epochs):
+        print("EPOCH {} ...".format(epoch))
+        # shuffle the batches? nope, done in the get_batches_fn function
+
+        for image, label in get_batches_fn(batch_size):
+            #image and label are numpy arrays with numpy data in them
+            # do training
+            # feed_dict, image, with correct label, keep prob
+            # do this on our train optimzer and cross entropy loss
+            sess.run(train_op, feed_dict={x: image, y: label})
     pass
 tests.test_train_nn(train_nn)
 
@@ -120,10 +169,6 @@ def run():
     data_dir = './data'
     runs_dir = './runs'
     tests.test_for_kitti_dataset(data_dir)
-
-    training_dir = data_dir + '/data_road/training'
-    training_input = training_dir + '/image_2' #need the extra slash?
-    training_correct = training_dir + '/gt_image_2'
 
     # Download pre-trained vgg model
     helper.maybe_download_pretrained_vgg(data_dir)
@@ -147,9 +192,10 @@ def run():
         # Create decoder and FCN using layers function
         last_layer = layers(layer3_out, layer4_out, layer7_out, num_classes)
 
-        # Load training images and correctly labeled training images into tensors?
-        input_images, correct_labels = helper.load_images_and_labels_to_tensors(training_input,
-                                                                                training_correct)
+        # TF Placeholder for images
+        input_images = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # TF Placeholder for labels
+        correct_labels = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
 
         # Create an optimization function that will be used to train the neural network
         logits, train_op, cross_entropy_loss = optimize(last_layer, correct_labels, learning_rate,
