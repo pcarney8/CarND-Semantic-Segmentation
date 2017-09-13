@@ -75,6 +75,7 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                        padding='same',
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
                                        strides=(2,2))
+    #TODO: does there need to be 1x1 convolutions between here?
     # Upsample
     input2 = tf.layers.conv2d_transpose(input1, num_classes, 4,
                                        padding='same',
@@ -142,17 +143,30 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     # TODO: what's goin on with all these extra inputs? do i need an evaluate portion?
     # and how is keep_prob and learning_rate being used here????
     print("training..\n")
+    index = 0
+    #TODO: convert keep_prob and learning_rate to tensors?
+    #TODO: do i need a with sess.as_default()???
+    keep_prob_t = keep_prob
+    learning_rate_t = learning_rate
 
     for epoch in range(epochs):
         print("EPOCH {} ...".format(epoch))
         # shuffle the batches? nope, done in the get_batches_fn function
 
         for image, label in get_batches_fn(batch_size):
+            index += 1
             #image and label are numpy arrays with numpy data in them
             # do training
             # feed_dict, image, with correct label, keep prob
             # do this on our train optimzer and cross entropy loss
-            sess.run(train_op, feed_dict={x: image, y: label})
+            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={image_input: image,
+                                          correct_label: label,
+                                          keep_prob: keep_prob_t,
+                                          learning_rate: learning_rate_t
+                                          })
+
+            print("Iteration among the batch:", '%04d | ' % (index), "cost =", "{:.9f}".format(loss))
+        print("Epoch:", '%04d | ' % (epoch+1), "cost =", "{:.9f}".format(loss))
     pass
 tests.test_train_nn(train_nn)
 
@@ -193,9 +207,13 @@ def run():
         last_layer = layers(layer3_out, layer4_out, layer7_out, num_classes)
 
         # TF Placeholder for images
+        # Todo: this isn't used need to figure out why it's here
         input_images = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+
         # TF Placeholder for labels
+        # Todo: see what this actually needs to be, think it should be the shape of the image because it is the correct labeled image shape
         correct_labels = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # correct_labels = tf.placeholder(tf.int32, shape=(1,1))
 
         # Create an optimization function that will be used to train the neural network
         logits, train_op, cross_entropy_loss = optimize(last_layer, correct_labels, learning_rate,
