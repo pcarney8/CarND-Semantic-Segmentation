@@ -191,7 +191,7 @@ def run():
     num_classes = 2
     image_shape = (160, 576)
     epochs = 10
-    batch_size = 10 # have to play with this one
+    batch_size = 17 # have to play with this one
 
     labels = ['road', 'not_road']
 
