@@ -144,7 +144,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 tests.test_optimize(optimize)
 
 
-def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
+def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, image_input,
              correct_label, keep_prob, learning_rate):
     """
     Train neural network and print out the loss during training.
@@ -154,7 +154,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param get_batches_fn: Function to get batches of training data.  Call using get_batches_fn(batch_size)
     :param train_op: TF Operation to train the neural network
     :param cross_entropy_loss: TF Tensor for the amount of loss
-    :param input_image: TF Placeholder for input images
+    :param image_input: TF Placeholder for input images
     :param correct_label: TF Placeholder for label images
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
@@ -180,7 +180,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             # do training
             # feed_dict, image, with correct label, keep prob
             # do this on our train optimzer and cross entropy loss
-            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={input_image: image,
+            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={image_input: image,
                                           correct_label: label,
                                           keep_prob: KEEP_PROB,
                                           learning_rate: LEARNING_RATE
@@ -232,15 +232,15 @@ def run():
 
         print("TF Placeholder for images")
         # Todo: this isn't used need to figure out why it's here
-        # input_image = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
-        # input_image = tf.placeholder(tf.float32, name='input_image')
+        # image_input = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # image_input = tf.placeholder(tf.float32, name='image_input')
 
         print("TF Placeholder for labels")
         # Todo: see what this actually needs to be, think it should be the shape of the image because it is the correct labeled image shape
         # correct_label = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
         # correct_label = tf.placeholder(tf.int32, shape=(1,1))
         # correct_label = tf.placeholder(tf.float32, name='correct_label')
-        input_image = tf.placeholder(tf.float32, name='input_image')
+        image_input = tf.placeholder(tf.float32, name='image_input')
         correct_label = tf.placeholder(tf.float32, name='correct_label')
         keep_prob = tf.placeholder(tf.float32, name='keep_prob')
         learning_rate = tf.placeholder(tf.float32, name='learning_rate')
@@ -250,12 +250,12 @@ def run():
                                                         num_classes)
 
         print("Train NN using the train_nn function")
-        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, image_input,
                  correct_label, keep_prob, learning_rate)
 
         print("Save inference data from trained model and run NN on the test directory")
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits,
-                                      keep_prob, input_image)
+                                      keep_prob, image_input)
 
         # OPTIONAL: Apply the trained model to a video
 
