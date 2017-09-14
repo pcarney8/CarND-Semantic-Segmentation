@@ -238,7 +238,7 @@ def run():
         # correct_label = tf.placeholder(tf.float32, name='correct_label')
         # image_input = tf.placeholder(tf.float32, name='image_input')
         # correct_label = tf.placeholder(tf.float32, name='correct_label')
-        keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+        # keep_prob = tf.placeholder(tf.float32, name='keep_prob')
         learning_rate = tf.placeholder(tf.float32, name='learning_rate')
 
         print("Create an optimization function that will be used to train the neural network")
