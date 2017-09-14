@@ -169,7 +169,7 @@ def run():
     print("starting run()..\n")
     num_classes = 2
     image_shape = (160, 576)
-    epochs = 20
+    epochs = 10
     batch_size = 17 # 289 is divisible by 17, easy way to batch up evenly
 
     data_dir = './data'
