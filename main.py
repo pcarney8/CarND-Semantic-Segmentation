@@ -217,12 +217,6 @@ def run():
         print("Create function to get batches")
         get_batches_fn = helper.gen_batch_function(os.path.join(data_dir, 'data_road/training'), image_shape)
 
-
-        for image, label in get_batches_fn(batch_size):
-            print("image: " + image)
-            print("image.shape: " + image.shape)
-            print("label: " + label)
-            print("label.shape: " + label.shape)
         # OPTIONAL: Augment Images for better results
         #  https://datascience.stackexchange.com/questions/5224/how-to-prepare-augment-images-for-neural-network
 
