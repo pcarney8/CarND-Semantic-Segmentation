@@ -4,7 +4,7 @@ import helper
 import warnings
 from distutils.version import LooseVersion
 import project_tests as tests
-
+import numpy as np
 
 # Check TensorFlow Version
 assert LooseVersion(tf.__version__) >= LooseVersion('1.0'), 'Please use TensorFlow version 1.0 or newer.  You are using {}'.format(tf.__version__)
@@ -17,8 +17,8 @@ else:
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
 
 #GLOBAL VARIABLES
-LEARNING_RATE = 0.0001
-KEEP_PROB = 0.75
+LEARNING_RATE = np.float32(0.0001)
+KEEP_PROB = np.float32(0.75)
 
 def load_vgg(sess, vgg_path):
     """
