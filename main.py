@@ -16,6 +16,9 @@ if not tf.test.gpu_device_name():
 else:
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
 
+#GLOBAL VARIABLES
+LEARNING_RATE = 0.005
+KEEP_PROB = 0.5
 
 def load_vgg(sess, vgg_path):
     """
@@ -162,8 +165,6 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     index = 0
     #TODO: convert keep_prob and learning_rate to tensors?
     #TODO: do i need a with sess.as_default()???
-    keep_prob_t = keep_prob
-    learning_rate_t = learning_rate
 
     for epoch in range(epochs):
         print("EPOCH {} ...".format(epoch))
@@ -177,8 +178,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             # do this on our train optimzer and cross entropy loss
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={input_image: image,
                                           correct_label: label,
-                                          keep_prob: keep_prob_t,
-                                          learning_rate: learning_rate_t
+                                          keep_prob: KEEP_PROB,
+                                          learning_rate: LEARNING_RATE
                                           })
 
             print("Iteration among the batch:", '%04d | ' % (index), "cost =", "{:.9f}".format(loss))
@@ -191,7 +192,6 @@ def run():
     print("starting run()..\n")
     num_classes = 2
     image_shape = (160, 576)
-    learning_rate = 0.5
     epochs = 100
     batch_size = 100 # have to play with this one
 
@@ -228,14 +228,19 @@ def run():
 
         print("TF Placeholder for images")
         # Todo: this isn't used need to figure out why it's here
-        input_image = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # input_image = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
         # input_image = tf.placeholder(tf.float32, name='input_image')
 
         print("TF Placeholder for labels")
         # Todo: see what this actually needs to be, think it should be the shape of the image because it is the correct labeled image shape
-        correct_label = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # correct_label = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
         # correct_label = tf.placeholder(tf.int32, shape=(1,1))
         # correct_label = tf.placeholder(tf.float32, name='correct_label')
+        input_image = tf.placeholder(tf.float32, name='input_image')
+        correct_label = tf.placeholder(tf.float32, name='correct_label')
+        keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+        learning_rate = tf.placeholder(tf.float32, name='learning_rate')
+
         print("Create an optimization function that will be used to train the neural network")
         logits, train_op, cross_entropy_loss = optimize(last_layer, correct_label, learning_rate,
                                                         num_classes)
