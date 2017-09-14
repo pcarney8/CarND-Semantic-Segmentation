@@ -228,16 +228,17 @@ def run():
 
         print("TF Placeholder for images")
         # Todo: this isn't used need to figure out why it's here
-        # image_input = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
         # image_input = tf.placeholder(tf.float32, name='image_input')
 
         print("TF Placeholder for labels")
         # Todo: see what this actually needs to be, think it should be the shape of the image because it is the correct labeled image shape
-        # correct_label = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # image_input = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # image_input = tf.placeholder(tf.float32, shape=(image_shape[0], image_shape[1], 3), name='image_input')
+        correct_label = tf.placeholder(tf.float32, shape=(image_shape[0], image_shape[1], 3), name='correct_label')
         # correct_label = tf.placeholder(tf.int32, shape=(1,1))
         # correct_label = tf.placeholder(tf.float32, name='correct_label')
-        image_input = tf.placeholder(tf.float32, name='image_input')
-        correct_label = tf.placeholder(tf.float32, name='correct_label')
+        # image_input = tf.placeholder(tf.float32, name='image_input')
+        # correct_label = tf.placeholder(tf.float32, name='correct_label')
         keep_prob = tf.placeholder(tf.float32, name='keep_prob')
         learning_rate = tf.placeholder(tf.float32, name='learning_rate')
 
