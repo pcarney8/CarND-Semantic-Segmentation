@@ -83,9 +83,10 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
                                        strides=(2,2))
     print("Skip Layer 1")
-    input3 = tf.add(input2, vgg_layer4_out,
-                   # padding='same',
-                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+    input3 = tf.add(input2, vgg_layer4_out
+                   # , padding='same'
+                   # , kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3)
+                    )
     print("Upsample 3")
     input4 = tf.layers.conv2d_transpose(input3, num_classes, 4,
                                        padding='same',
@@ -93,8 +94,9 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                        strides=(2,2))
     print("Skip Layer 2")
     input5 = tf.add(input4, vgg_layer3_out,
-                   # padding='same',
-                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                    # , padding='same'
+                    # , kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3)
+                    )
     print("Upsample 4")
     input6 = tf.layers.conv2d_transpose(input5, num_classes, 16,
                                        padding='same',
