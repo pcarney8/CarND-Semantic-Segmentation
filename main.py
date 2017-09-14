@@ -16,10 +16,6 @@ if not tf.test.gpu_device_name():
 else:
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
 
-#GLOBAL VARIABLES
-LEARNING_RATE = np.float32(0.0001)
-KEEP_PROB = np.float32(0.75)
-
 def load_vgg(sess, vgg_path):
     """
     Load Pretrained VGG Model into TensorFlow.
@@ -164,6 +160,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     # and how is keep_prob and learning_rate being used here????
     print("training..\n")
     index = 0
+    KEEP_PROBABILITY = np.float32(0.75)
+    LEARN_RATE = np.float32(0.0001)
     #TODO: convert keep_prob and learning_rate to tensors?
     #TODO: do i need a with sess.as_default()???
 
@@ -178,8 +176,8 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             # do this on our train optimzer and cross entropy loss
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={image_input: image,
                                           correct_label: label,
-                                          keep_prob: KEEP_PROB,
-                                          learning_rate: LEARNING_RATE
+                                          keep_prob: KEEP_PROBABILITY,
+                                          learning_rate: LEARN_RATE
                                           })
 
             print("Iteration among the batch:", '%04d | ' % (index), "cost =", "{:.9f}".format(loss))
