@@ -40,9 +40,15 @@ When building my FCN I ran into some difficulty with tensor shapes, partially be
 Then I came to find out I set the number of channels on my `correct_label` tensor to 1 too many. There are only 2 channels on the `correct_label` tensor, because we're doing "road" and "not road". There could be more if there were more classifications. I chose to stick with two for now.
 Once that was sorted out it was a bit simpler to figure out similar errors. On my very first run, I set my `batch_size` to 10, and left the `correct_label` set to 10 too. Unfortunately when you get through the first run, we end up with only 9 images on the last batch. I figured out that 289 was divisble by 17 and just decided to use a `batch_size` of 17. I know that I could probably use some sort of TF variable here to make this adjustable, but I found that training on a g3.8xlarge goes pretty fast still.
 Now, with my first run completed my image came out looking like this: <uu_000098.png>.
-`Epoch: 0010 |  cost = 0.725917161`
-This definitely isn't correct, and was actually what I was attempting to avoid by using the kernel regularizer that was suggested in the video. Clearly having the green for road everywhere is not what I want.
+Final numbers run 1: `Epoch: 0010 |  cost = 0.725917161`
+This definitely isn't correct, and was actually what I was attempting to avoid by using the `kernel_regularizer` that was suggested in the video. Clearly having the green for road everywhere is not what I want.
+Once I completed my project, I noted that my cost in the first epoch was _extremely_ high, starting with almost 65!
 I double checked that this isn't working by putting my epochs up to 20 (from the original 10).
-Definitely still wasn't working, image came out like this: <uu_000003.png>
-`Epoch: 0020 |  cost = 0.701197147`
-Hmm, well this still seems to be a problem, I guess the regularizer isn't helping me as much as I want it to. After taking a look at the forums, I decided to try out the `kernel_initializer` using a truncated normal distribution with a standard deviation of 0.01 makes sense to be because we have done similar initialization with our other neural networks.
+Starting epoch cost is still very high and you can see the test run image is similar to the first run: <uu_000003.png>
+Final numbers run 2: `Epoch: 0020 |  cost = 0.701197147`
+Hmm, well this still seems to be a problem, I guess the `kernel_regularizer` isn't helping me as much as I want it to. After taking a look at the forums, I decided to try out the `kernel_initializer` using a truncated normal distribution with a standard deviation of 0.01. This makes sense to me because we have done similar initializations with our other neural networks to positive results.
+Final numbers run 3: `Epoch: 0010 |  cost = 0.085086457`
+Wow, ok now that is MUCH better. Down to just 0.08 on the cost from a previous 0.70. And this only took 10 epochs.
+<uu_000010.png>
+<uu_000098_initializer.png>
+I'm much more impressed with the `kernel_initializer` than the `kernel_regularizer`
