@@ -58,46 +58,48 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
     # We are adding layers after vgg layers
     print("Build Skip layers using conv2d_transpose for the decoder")
+    kernel_initializer = tf.truncated_normal_initializer(stddev = 0.01)
 
     print("1x1 convolution on vgg_layer7")
     layer7_conv = tf.layers.conv2d(vgg_layer7_out, num_classes, 1,
-                                padding='same',
-                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
-                                strides=(1,1))
+                                   padding='same',
+                                   kernel_initializer=kernel_initializer,
+                                   strides=(1,1))
 
     print("Upsample 1")
     up1 = tf.layers.conv2d_transpose(layer7_conv, num_classes, 4,
-                                       padding='same',
-                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
-                                       strides=(2,2))
+                                     padding='same',
+                                     kernel_initializer=kernel_initializer,
+                                     strides=(2,2))
 
     print("1x1 convolution on vgg_layer4")
     layer4_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, 1,
-                                padding='same',
-                                kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
-                                strides=(1,1))
+                                   padding='same',
+                                   kernel_initializer=kernel_initializer,
+                                   strides=(1,1))
 
     print("Skip vgg_layer4")
     skip1 = tf.add(layer4_conv, up1)
 
     print("Upsample 2")
     up2 = tf.layers.conv2d_transpose(skip1, num_classes, 4,
-                                       padding='same',
-                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
-                                       strides=(2,2))
+                                     padding='same',
+                                     kernel_initializer=kernel_initializer,
+                                     strides=(2,2))
+
     print("1x1 convolution on vgg_layer3")
     layer3_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1,
                                    padding='same',
-                                   kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
+                                   kernel_initializer=kernel_initializer,
                                    strides=(1,1))
     print("Skip vgg_layer3")
     skip2 = tf.add(layer3_conv, up2)
 
     print("Upsample 3")
     input6 = tf.layers.conv2d_transpose(skip2, num_classes, 16,
-                                       padding='same',
-                                       kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
-                                       strides=(8,8))
+                                        padding='same',
+                                        kernel_initializer=kernel_initializer,
+                                        strides=(8,8))
     return input6
 tests.test_layers(layers)
 
