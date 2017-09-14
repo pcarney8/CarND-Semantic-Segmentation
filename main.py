@@ -17,8 +17,8 @@ else:
     print('Default GPU Device: {}'.format(tf.test.gpu_device_name()))
 
 #GLOBAL VARIABLES
-LEARNING_RATE = 0.005
-KEEP_PROB = 0.5
+LEARNING_RATE = 0.0001
+KEEP_PROB = 0.75
 
 def load_vgg(sess, vgg_path):
     """
@@ -133,6 +133,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     # TODO: Implement function
     print("Get the logits from the network")
     logits = tf.reshape(nn_last_layer, (-1, num_classes))
+    correct_label = tf.reshape(correct_label, (-1, num_classes))
 
     # TODO: MAKE SURE LABEL SIZE MATCHES WITH LOGITS
     print("Cross entropy loss")
@@ -169,7 +170,6 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     for epoch in range(epochs):
         print("EPOCH {} ...".format(epoch))
         # shuffle the batches? nope, done in the get_batches_fn function
-
         for image, label in get_batches_fn(batch_size):
             index += 1
             #image and label are numpy arrays with numpy data in them
@@ -192,8 +192,8 @@ def run():
     print("starting run()..\n")
     num_classes = 2
     image_shape = (160, 576)
-    epochs = 100
-    batch_size = 100 # have to play with this one
+    epochs = 10
+    batch_size = 10 # have to play with this one
 
     labels = ['road', 'not_road']
 
@@ -245,6 +245,7 @@ def run():
         logits, train_op, cross_entropy_loss = optimize(last_layer, correct_label, learning_rate,
                                                         num_classes)
 
+        sess.run(tf.global_variables_initializer())
         print("Train NN using the train_nn function")
         train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, image_input,
                  correct_label, keep_prob, learning_rate)
