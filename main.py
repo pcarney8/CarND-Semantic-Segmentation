@@ -23,7 +23,6 @@ def load_vgg(sess, vgg_path):
     :param vgg_path: Path to vgg folder, containing "variables/" and "saved_model.pb"
     :return: Tuple of Tensors from VGG model (image_input, keep_prob, layer3_out, layer4_out, layer7_out)
     """
-
     vgg_tag = 'vgg16'
     vgg_input_tensor_name = 'image_input:0'
     vgg_keep_prob_tensor_name = 'keep_prob:0'
@@ -32,13 +31,10 @@ def load_vgg(sess, vgg_path):
     vgg_layer7_out_tensor_name = 'layer7_out:0'
 
     print("Loading VGG model and weights for the encoder")
-    # TODO: MAKE SURE THIS IS VGG_PATH AND NOT SUPPOSED TO BE VGG_TAG
     tf.saved_model.loader.load(sess, [vgg_tag], vgg_path)
 
     print("Take out layers and keep_prob for skip layers")
     graph = tf.get_default_graph()
-    # TODO: not sure why we're not grabbing from session?
-    # graph = sess.graph
 
     print("Get all the tensors by name")
     image_input = graph.get_tensor_by_name(vgg_input_tensor_name)
@@ -60,11 +56,10 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     :param num_classes: Number of classes to classify
     :return: The Tensor for the last layer of output
     """
-    # TODO: Implement function, THESE ARE THE LAYERS AFTER THE VGG RUNS, SKIP LAYERS, AND OUTPUT
+    # We are adding layers after vgg layers
     print("Build Skip layers using conv2d_transpose for the decoder")
 
-    # TODO: do i need the strides set to 1x1?
-    print("1x1 to make it a fully convolutional network")
+    print("1x1 convolution on vgg_layer7")
     layer7_conv = tf.layers.conv2d(vgg_layer7_out, num_classes, 1,
                                 padding='same',
                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
@@ -75,44 +70,34 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
                                        padding='same',
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
                                        strides=(2,2))
-    #TODO: does there need to be 1x1 convolutions between here?
-    print("1x1 to make it a fully convolutional network")
+
+    print("1x1 convolution on vgg_layer4")
     layer4_conv = tf.layers.conv2d(vgg_layer4_out, num_classes, 1,
                                 padding='same',
                                 kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
                                 strides=(1,1))
 
-    print("Skip Layer 1")
-    skip1 = tf.add(layer4_conv, up1
-                   # , padding='same'
-                   # , kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3)
-                    )
+    print("Skip vgg_layer4")
+    skip1 = tf.add(layer4_conv, up1)
+
     print("Upsample 2")
     up2 = tf.layers.conv2d_transpose(skip1, num_classes, 4,
                                        padding='same',
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
                                        strides=(2,2))
+    print("1x1 convolution on vgg_layer3")
     layer3_conv = tf.layers.conv2d(vgg_layer3_out, num_classes, 1,
                                    padding='same',
                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
                                    strides=(1,1))
-    print("Skip Layer 2")
-    skip2 = tf.add(layer3_conv, up2
-                # , padding='same'
-                # , kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3)
-                )
-    # print("Upsample 3")
-    # input4 = tf.layers.conv2d_transpose(input3, num_classes, 4,
-    #                                    padding='same',
-    #                                    kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
-    #                                    strides=(2,2))
+    print("Skip vgg_layer3")
+    skip2 = tf.add(layer3_conv, up2)
 
     print("Upsample 3")
     input6 = tf.layers.conv2d_transpose(skip2, num_classes, 16,
                                        padding='same',
                                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3),
                                        strides=(8,8))
-
     return input6
 tests.test_layers(layers)
 
@@ -126,14 +111,13 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
     :param num_classes: Number of classes to classify
     :return: Tuple of (logits, train_op, cross_entropy_loss)
     """
-    # TODO: Implement function
-    print("Get the logits from the network")
+    print("Reshape logits and labels")
     logits = tf.reshape(nn_last_layer, (-1, num_classes))
     correct_label = tf.reshape(correct_label, (-1, num_classes))
 
-    # TODO: MAKE SURE LABEL SIZE MATCHES WITH LOGITS
     print("Cross entropy loss")
     cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=correct_label))
+
     print("Training optimizer")
     train_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
 
@@ -156,24 +140,17 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
     :param keep_prob: TF Placeholder for dropout keep probability
     :param learning_rate: TF Placeholder for learning rate
     """
-    # TODO: what's goin on with all these extra inputs? do i need an evaluate portion?
-    # and how is keep_prob and learning_rate being used here????
     print("training..\n")
     index = 0
     KEEP_PROBABILITY = np.float32(0.75)
     LEARN_RATE = np.float32(0.0001)
-    #TODO: convert keep_prob and learning_rate to tensors?
-    #TODO: do i need a with sess.as_default()???
 
     for epoch in range(epochs):
         print("EPOCH {} ...".format(epoch))
         # shuffle the batches? nope, done in the get_batches_fn function
         for image, label in get_batches_fn(batch_size):
             index += 1
-            #image and label are numpy arrays with numpy data in them
             # do training
-            # feed_dict, image, with correct label, keep prob
-            # do this on our train optimzer and cross entropy loss
             _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={image_input: image,
                                           correct_label: label,
                                           keep_prob: KEEP_PROBABILITY,
@@ -190,10 +167,8 @@ def run():
     print("starting run()..\n")
     num_classes = 2
     image_shape = (160, 576)
-    epochs = 10
-    batch_size = 17 # have to play with this one
-
-    labels = ['road', 'not_road']
+    epochs = 20
+    batch_size = 17 # 289 is divisible by 17, easy way to batch up evenly
 
     data_dir = './data'
     runs_dir = './runs'
@@ -224,21 +199,12 @@ def run():
         print("Create decoder and FCN using layers function")
         last_layer = layers(layer3_out, layer4_out, layer7_out, num_classes)
 
-        print("TF Placeholder for images")
-        # Todo: this isn't used need to figure out why it's here
-        # image_input = tf.placeholder(tf.float32, name='image_input')
-
-        print("TF Placeholder for labels")
-        # Todo: see what this actually needs to be, think it should be the shape of the image because it is the correct labeled image shape
-        # image_input = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
-        # image_input = tf.placeholder(tf.float32, shape=(image_shape[0], image_shape[1], 3), name='image_input')
+        print("Create TF Placeholder for correct_label")
+        # TODO: CAN I MAKE THE BATCH_SIZE PORTION OF THIS A VARIABLE? THAT WAY IT DOES IT WITH WHATEVER IS AVAILABLE?
         # only two channels because the correct stuff is just using pink and not pink.
         correct_label = tf.placeholder(tf.float32, shape=(batch_size, image_shape[0], image_shape[1], 2), name='correct_label')
-        # correct_label = tf.placeholder(tf.int32, shape=(1,1))
-        # correct_label = tf.placeholder(tf.float32, name='correct_label')
-        # image_input = tf.placeholder(tf.float32, name='image_input')
-        # correct_label = tf.placeholder(tf.float32, name='correct_label')
-        # keep_prob = tf.placeholder(tf.float32, name='keep_prob')
+
+        print("Create TF Placeholder for learning_rate")
         learning_rate = tf.placeholder(tf.float32, name='learning_rate')
 
         print("Create an optimization function that will be used to train the neural network")
