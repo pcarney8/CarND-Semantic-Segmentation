@@ -38,3 +38,6 @@ With kernel_regularizer                                              | With kern
 <img src="uu_000098.png" alt="without_ki" height="150"/> | <img src="uu_000098_initializer.png" height="150">
 <br>
 I'm much more impressed with the `kernel_initializer` than the `kernel_regularizer` although I have a feeling that I probably messed up my configuratoin for the regularizer somewhere.
+
+### ami-setup.sh
+There were a few messed up things with the AMI so I created a small script that would pull things in and setup everything for me. Might have to move this over to Ansible if I get the time.
