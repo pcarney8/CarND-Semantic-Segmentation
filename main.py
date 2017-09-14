@@ -133,7 +133,7 @@ def optimize(nn_last_layer, correct_label, learning_rate, num_classes):
 
     # TODO: MAKE SURE LABEL SIZE MATCHES WITH LOGITS
     print("Cross entropy loss")
-    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits, correct_label))
+    cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=correct_label))
     print("Training optimizer")
     train_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy_loss)
 
