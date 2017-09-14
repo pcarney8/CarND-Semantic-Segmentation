@@ -172,10 +172,10 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
 
         for image, label in get_batches_fn(batch_size):
             index += 1
-            print("image: " + image)
-            print("image.shape: " + image.shape)
-            print("label: " + label)
-            print("label.shape: " + label.shape)
+            # print("image: " + image)
+            # print("image.shape: " + image.shape)
+            # print("label: " + label)
+            # print("label.shape: " + label.shape)
             #image and label are numpy arrays with numpy data in them
             # do training
             # feed_dict, image, with correct label, keep prob
