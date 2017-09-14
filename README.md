@@ -45,3 +45,4 @@ This definitely isn't correct, and was actually what I was attempting to avoid b
 I double checked that this isn't working by putting my epochs up to 20 (from the original 10).
 Definitely still wasn't working, image came out like this: <uu_000003.png>
 `Epoch: 0020 |  cost = 0.701197147`
+Hmm, well this still seems to be a problem, I guess the regularizer isn't helping me as much as I want it to. After taking a look at the forums, I decided to try out the `kernel_initializer` using a truncated normal distribution with a standard deviation of 0.01 makes sense to be because we have done similar initialization with our other neural networks.
