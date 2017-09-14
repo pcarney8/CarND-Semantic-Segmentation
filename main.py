@@ -175,7 +175,7 @@ def train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_l
             # do training
             # feed_dict, image, with correct label, keep prob
             # do this on our train optimzer and cross entropy loss
-            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={image_input: image,
+            _, loss = sess.run([train_op, cross_entropy_loss], feed_dict={input_image: image,
                                           correct_label: label,
                                           keep_prob: keep_prob_t,
                                           learning_rate: learning_rate_t
@@ -228,24 +228,25 @@ def run():
 
         print("TF Placeholder for images")
         # Todo: this isn't used need to figure out why it's here
-        input_images = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        input_image = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # input_image = tf.placeholder(tf.float32, name='input_image')
 
         print("TF Placeholder for labels")
         # Todo: see what this actually needs to be, think it should be the shape of the image because it is the correct labeled image shape
-        correct_labels = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
-        # correct_labels = tf.placeholder(tf.int32, shape=(1,1))
-
+        correct_label = tf.placeholder(tf.float32, (None, image_shape[0], image_shape[1], 3))
+        # correct_label = tf.placeholder(tf.int32, shape=(1,1))
+        # correct_label = tf.placeholder(tf.float32, name='correct_label')
         print("Create an optimization function that will be used to train the neural network")
-        logits, train_op, cross_entropy_loss = optimize(last_layer, correct_labels, learning_rate,
+        logits, train_op, cross_entropy_loss = optimize(last_layer, correct_label, learning_rate,
                                                         num_classes)
 
         print("Train NN using the train_nn function")
-        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_images,
-                 correct_labels, keep_prob, learning_rate)
+        train_nn(sess, epochs, batch_size, get_batches_fn, train_op, cross_entropy_loss, input_image,
+                 correct_label, keep_prob, learning_rate)
 
         print("Save inference data from trained model and run NN on the test directory")
         helper.save_inference_samples(runs_dir, data_dir, sess, image_shape, logits,
-                                      keep_prob, input_images)
+                                      keep_prob, input_image)
 
         # OPTIONAL: Apply the trained model to a video
 
